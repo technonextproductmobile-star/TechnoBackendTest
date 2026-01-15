@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { getFileExtension, getFileType, generateUniqueFilename, getUploadDirectory, ensureDirectoryExists, formatFileSize } from '../utils/fileUtils.js';
+import { getFileExtension, getFileType, generateUniqueFilename, getUploadDirectory, ensureDirectoryExists, formatFileSize, isServerless } from '../utils/fileUtils.js';
 import { config } from '../config/index.js';
 
 /**
@@ -8,7 +8,8 @@ import { config } from '../config/index.js';
  */
 class UploadService {
   /**
-   * Process uploaded file (file is already saved by multer disk storage)
+   * Process uploaded file
+   * Handles both disk storage (regular) and memory storage (serverless)
    * @param {object} file - Multer file object
    * @returns {Promise<object>} File information
    */
@@ -32,20 +33,43 @@ class UploadService {
         throw new Error(`File size exceeds maximum allowed size of ${formatFileSize(config.upload.maxFileSize)}`);
       }
 
-      // File is already saved by multer, get the path
-      const filePath = file.path;
-      const filename = path.basename(filePath);
+      // Generate unique filename
+      const filename = generateUniqueFilename(file.originalname);
+      
+      // Handle serverless vs regular environment
+      if (isServerless()) {
+        // In serverless (Vercel), file is in memory (file.buffer)
+        // For production, you should upload to cloud storage (S3, Cloudinary, Vercel Blob, etc.)
+        // For now, we'll return the file info but note that storage is needed
+        
+        // TODO: Upload to cloud storage service (AWS S3, Cloudinary, Vercel Blob, etc.)
+        // For now, return file info without saving
+        return {
+          originalName: file.originalname,
+          filename: filename,
+          fileType: fileType,
+          size: file.size,
+          mimetype: file.mimetype,
+          path: null, // Not saved to disk in serverless
+          url: `/uploads/${fileType === 'image' ? 'images' : fileType === 'audio' ? 'audio' : 'video'}/${filename}`,
+          buffer: file.buffer, // Keep buffer for cloud storage upload
+          note: 'File is in memory. Cloud storage integration required for serverless environments.'
+        };
+      } else {
+        // Regular environment - file is already saved to disk by multer
+        const filePath = file.path;
+        const savedFilename = path.basename(filePath);
 
-      // Return file information
-      return {
-        originalName: file.originalname,
-        filename: filename,
-        fileType: fileType,
-        size: file.size,
-        mimetype: file.mimetype,
-        path: filePath,
-        url: `/uploads/${fileType === 'image' ? 'images' : fileType === 'audio' ? 'audio' : 'video'}/${filename}`
-      };
+        return {
+          originalName: file.originalname,
+          filename: savedFilename,
+          fileType: fileType,
+          size: file.size,
+          mimetype: file.mimetype,
+          path: filePath,
+          url: `/uploads/${fileType === 'image' ? 'images' : fileType === 'audio' ? 'audio' : 'video'}/${savedFilename}`
+        };
+      }
     } catch (error) {
       throw new Error(`Failed to process file: ${error.message}`);
     }

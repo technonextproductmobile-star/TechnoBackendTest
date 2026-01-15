@@ -62,14 +62,40 @@ export const getUploadDirectory = (fileType, config) => {
 };
 
 /**
+ * Check if we're in a serverless environment (Vercel, AWS Lambda, etc.)
+ * @returns {boolean}
+ */
+export const isServerless = () => {
+  return !!(
+    process.env.VERCEL ||
+    process.env.AWS_LAMBDA_FUNCTION_NAME ||
+    process.env.NETLIFY ||
+    process.env.VERCEL_ENV
+  );
+};
+
+/**
  * Ensure directory exists, create if it doesn't
+ * Skip directory creation in serverless environments
  * @param {string} dirPath 
  */
 export const ensureDirectoryExists = async (dirPath) => {
+  // Skip directory creation in serverless environments (read-only filesystem)
+  if (isServerless()) {
+    return;
+  }
+  
   try {
     await fs.access(dirPath);
   } catch (error) {
-    await fs.mkdir(dirPath, { recursive: true });
+    try {
+      await fs.mkdir(dirPath, { recursive: true });
+    } catch (mkdirError) {
+      // Ignore errors in serverless environments
+      if (!isServerless()) {
+        throw mkdirError;
+      }
+    }
   }
 };
 

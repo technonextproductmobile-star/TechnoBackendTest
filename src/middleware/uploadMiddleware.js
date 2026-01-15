@@ -1,7 +1,7 @@
 import multer from 'multer';
 import path from 'path';
 import { config } from '../config/index.js';
-import { getFileExtension, getFileType, generateUniqueFilename, getUploadDirectory, ensureDirectoryExists } from '../utils/fileUtils.js';
+import { getFileExtension, getFileType, generateUniqueFilename, getUploadDirectory, ensureDirectoryExists, isServerless } from '../utils/fileUtils.js';
 
 /**
  * Create multer storage configuration
@@ -44,8 +44,21 @@ const fileFilter = (req, file, cb) => {
 
 /**
  * Create multer instance for file upload with dynamic storage
+ * Uses memory storage in serverless environments (Vercel, etc.)
  */
 const createUploadMiddleware = () => {
+  // Use memory storage in serverless environments (read-only filesystem)
+  if (isServerless()) {
+    return multer({
+      storage: multer.memoryStorage(),
+      fileFilter: fileFilter,
+      limits: {
+        fileSize: config.upload.maxFileSize
+      }
+    });
+  }
+
+  // Use disk storage in regular environments
   return multer({
     storage: multer.diskStorage({
       destination: async (req, file, cb) => {
