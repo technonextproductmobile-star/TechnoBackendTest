@@ -9,6 +9,8 @@ yarn.lock
 .env.*.local
 
 # Uploads
+uploads/**/*
+!uploads/.gitkeep
 
 # Logs
 logs/
