@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload API - Upload Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .upload-section {
+            margin-bottom: 30px;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 60px 20px;
+            text-align: center;
+            background: #f8f9ff;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
+        }
+
+        .upload-area.dragover {
+            border-color: #764ba2;
+            background: #e8ebff;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 4em;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .upload-text {
+            font-size: 1.2em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            color: #999;
+            font-size: 0.9em;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px 5px;
+            font-weight: 600;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            box-shadow: 0 10px 20px rgba(108, 117, 125, 0.4);
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .file-list {
+            margin-top: 30px;
+        }
+
+        .file-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .file-item:hover {
+            background: #e9ecef;
+        }
+
+        .file-info {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .file-size {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .file-status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-uploading {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .results {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .result-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .result-item.success {
+            border-left-color: #28a745;
+        }
+
+        .result-item.error {
+            border-left-color: #dc3545;
+        }
+
+        .result-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .result-url {
+            color: #667eea;
+            text-decoration: none;
+            word-break: break-all;
+        }
+
+        .result-url:hover {
+            text-decoration: underline;
+        }
+
+        .info-section {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .info-title {
+            font-weight: 600;
+            color: #1976D2;
+            margin-bottom: 10px;
+        }
+
+        .info-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-list li {
+            color: #555;
+            margin-bottom: 5px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .info-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #2196F3;
+            font-weight: bold;
+        }
+
+        .clear-btn {
+            margin-top: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .upload-area {
+                padding: 40px 15px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                margin: 5px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📤 File Upload</h1>
+        <p class="subtitle">Upload images, audio, and video files</p>
+
+        <div class="info-section">
+            <div class="info-title">Supported File Types:</div>
+            <ul class="info-list">
+                <li>Images: JPG, JPEG, PNG, GIF, WEBP</li>
+                <li>Audio: MP3, WAV, OGG, M4A, AAC</li>
+                <li>Video: MP4, AVI, MOV, WMV, FLV, WEBM, MKV</li>
+            </ul>
+        </div>
+
+        <div class="upload-section">
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">Drag & Drop files here</div>
+                <div class="upload-hint">or click to browse</div>
+            </div>
+            <input type="file" id="fileInput" multiple>
+            <div class="button-group">
+                <button class="btn" id="selectFilesBtn">Select Files</button>
+                <button class="btn btn-secondary" id="clearFilesBtn">Clear All</button>
+            </div>
+        </div>
+
+        <div class="file-list" id="fileList"></div>
+
+        <div class="button-group">
+            <button class="btn" id="uploadSingleBtn">Upload Single</button>
+            <button class="btn" id="uploadMultipleBtn">Upload Multiple</button>
+        </div>
+
+        <div class="results" id="results"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = window.location.origin;
+        let selectedFiles = [];
+
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+        const results = document.getElementById('results');
+
+        // Drag and drop handlers
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = Array.from(e.dataTransfer.files);
+            addFiles(files);
+        });
+
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            addFiles(files);
+        });
+
+        // Button event listeners
+        document.getElementById('selectFilesBtn').addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        document.getElementById('clearFilesBtn').addEventListener('click', () => {
+            clearFiles();
+        });
+
+        document.getElementById('uploadSingleBtn').addEventListener('click', () => {
+            uploadFiles('single');
+        });
+
+        document.getElementById('uploadMultipleBtn').addEventListener('click', () => {
+            uploadFiles('multiple');
+        });
+
+        // Event delegation for dynamically created remove buttons
+        fileList.addEventListener('click', (e) => {
+            if (e.target.classList.contains('remove-file-btn')) {
+                const index = parseInt(e.target.getAttribute('data-index'));
+                removeFile(index);
+            }
+        });
+
+        function addFiles(files) {
+            files.forEach(file => {
+                if (!selectedFiles.find(f => f.name === file.name && f.size === file.size)) {
+                    selectedFiles.push(file);
+                }
+            });
+            renderFileList();
+        }
+
+        function renderFileList() {
+            fileList.innerHTML = '';
+            selectedFiles.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <div class="file-info">
+                        <div class="file-name">${file.name}</div>
+                        <div class="file-size">${formatFileSize(file.size)}</div>
+                        <div class="progress-bar" id="progress-${index}" style="display: none;">
+                            <div class="progress-fill" id="progress-fill-${index}"></div>
+                        </div>
+                    </div>
+                    <div class="file-status status-pending" id="status-${index}">Pending</div>
+                    <button class="btn btn-secondary remove-file-btn" style="margin-left: 10px; padding: 5px 15px; font-size: 0.9em;" data-index="${index}">Remove</button>
+                `;
+                fileList.appendChild(fileItem);
+            });
+        }
+
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            renderFileList();
+        }
+
+        function clearFiles() {
+            selectedFiles = [];
+            renderFileList();
+            results.classList.remove('show');
+            results.innerHTML = '';
+        }
+
+        async function uploadFiles(mode) {
+            if (selectedFiles.length === 0) {
+                alert('Please select at least one file');
+                return;
+            }
+
+            if (mode === 'single' && selectedFiles.length > 1) {
+                alert('Single upload mode: Please select only one file');
+                return;
+            }
+
+            // Reset results
+            results.classList.remove('show');
+            results.innerHTML = '';
+
+            // Upload files
+            if (mode === 'single') {
+                await uploadSingleFile(selectedFiles[0], 0);
+            } else {
+                await uploadMultipleFiles();
+            }
+        }
+
+        async function uploadSingleFile(file, index) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const endpoint = `${API_BASE_URL}/api/upload/single`;
+
+            // Update status
+            const statusEl = document.getElementById(`status-${index}`);
+            const progressBar = document.getElementById(`progress-${index}`);
+            const progressFill = document.getElementById(`progress-fill-${index}`);
+            
+            if (statusEl) {
+                statusEl.textContent = 'Uploading...';
+                statusEl.className = 'file-status status-uploading';
+                if (progressBar) progressBar.style.display = 'block';
+            }
+
+            try {
+                const xhr = new XMLHttpRequest();
+
+                // Track upload progress
+                xhr.upload.addEventListener('progress', (e) => {
+                    if (e.lengthComputable && progressFill) {
+                        const percentComplete = (e.loaded / e.total) * 100;
+                        progressFill.style.width = percentComplete + '%';
+                    }
+                });
+
+                const response = await new Promise((resolve, reject) => {
+                    xhr.onload = () => {
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            try {
+                                resolve(JSON.parse(xhr.responseText));
+                            } catch (e) {
+                                reject(new Error('Invalid response from server'));
+                            }
+                        } else {
+                            try {
+                                const errorData = JSON.parse(xhr.responseText);
+                                reject(new Error(errorData.message || 'Upload failed'));
+                            } catch (e) {
+                                reject(new Error(xhr.responseText || 'Upload failed'));
+                            }
+                        }
+                    };
+                    xhr.onerror = () => reject(new Error('Network error: Upload failed'));
+                    xhr.open('POST', endpoint);
+                    xhr.send(formData);
+                });
+
+                // Success
+                if (statusEl) {
+                    statusEl.textContent = 'Success';
+                    statusEl.className = 'file-status status-success';
+                    if (progressFill) progressFill.style.width = '100%';
+                }
+
+                // Add to results
+                const resultItem = document.createElement('div');
+                resultItem.className = 'result-item success';
+                resultItem.innerHTML = `
+                    <div class="result-title">✓ ${file.name}</div>
+                    <div>Type: ${response.data.fileType || 'N/A'}</div>
+                    <div>Size: ${response.data.sizeFormatted || formatFileSize(file.size)}</div>
+                    <div>URL: <a href="${API_BASE_URL}${response.data.url}" target="_blank" class="result-url">${API_BASE_URL}${response.data.url}</a></div>
+                `;
+                results.appendChild(resultItem);
+                results.classList.add('show');
+
+            } catch (error) {
+                // Error
+                if (statusEl) {
+                    statusEl.textContent = 'Error';
+                    statusEl.className = 'file-status status-error';
+                    if (progressBar) progressBar.style.display = 'none';
+                }
+
+                const errorMessage = error.message || 'Upload failed';
+
+                const resultItem = document.createElement('div');
+                resultItem.className = 'result-item error';
+                resultItem.innerHTML = `
+                    <div class="result-title">✗ ${file.name}</div>
+                    <div>Error: ${errorMessage}</div>
+                `;
+                results.appendChild(resultItem);
+                results.classList.add('show');
+            }
+        }
+
+        async function uploadMultipleFiles() {
+            const formData = new FormData();
+            selectedFiles.forEach(file => {
+                formData.append('files', file);
+            });
+
+            const endpoint = `${API_BASE_URL}/api/upload/multiple`;
+
+            // Update all statuses
+            selectedFiles.forEach((file, index) => {
+                const statusEl = document.getElementById(`status-${index}`);
+                const progressBar = document.getElementById(`progress-${index}`);
+                if (statusEl) {
+                    statusEl.textContent = 'Uploading...';
+                    statusEl.className = 'file-status status-uploading';
+                    if (progressBar) progressBar.style.display = 'block';
+                }
+            });
+
+            try {
+                const xhr = new XMLHttpRequest();
+
+                // Track overall upload progress
+                xhr.upload.addEventListener('progress', (e) => {
+                    if (e.lengthComputable) {
+                        const percentComplete = (e.loaded / e.total) * 100;
+                        selectedFiles.forEach((file, index) => {
+                            const progressFill = document.getElementById(`progress-fill-${index}`);
+                            if (progressFill) {
+                                progressFill.style.width = percentComplete + '%';
+                            }
+                        });
+                    }
+                });
+
+                const response = await new Promise((resolve, reject) => {
+                    xhr.onload = () => {
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            try {
+                                resolve(JSON.parse(xhr.responseText));
+                            } catch (e) {
+                                reject(new Error('Invalid response from server'));
+                            }
+                        } else {
+                            try {
+                                const errorData = JSON.parse(xhr.responseText);
+                                reject(new Error(errorData.message || 'Upload failed'));
+                            } catch (e) {
+                                reject(new Error(xhr.responseText || 'Upload failed'));
+                            }
+                        }
+                    };
+                    xhr.onerror = () => reject(new Error('Network error: Upload failed'));
+                    xhr.open('POST', endpoint);
+                    xhr.send(formData);
+                });
+
+                // Success - update all statuses
+                if (response.data && Array.isArray(response.data)) {
+                    response.data.forEach((fileData, index) => {
+                        const statusEl = document.getElementById(`status-${index}`);
+                        const progressFill = document.getElementById(`progress-fill-${index}`);
+                        if (statusEl) {
+                            statusEl.textContent = 'Success';
+                            statusEl.className = 'file-status status-success';
+                            if (progressFill) progressFill.style.width = '100%';
+                        }
+
+                        // Add to results
+                        const resultItem = document.createElement('div');
+                        resultItem.className = 'result-item success';
+                        resultItem.innerHTML = `
+                            <div class="result-title">✓ ${fileData.originalName || selectedFiles[index].name}</div>
+                            <div>Type: ${fileData.fileType || 'N/A'}</div>
+                            <div>Size: ${fileData.sizeFormatted || formatFileSize(selectedFiles[index].size)}</div>
+                            <div>URL: <a href="${API_BASE_URL}${fileData.url}" target="_blank" class="result-url">${API_BASE_URL}${fileData.url}</a></div>
+                        `;
+                        results.appendChild(resultItem);
+                    });
+                }
+
+                results.classList.add('show');
+
+            } catch (error) {
+                // Error - update all statuses
+                selectedFiles.forEach((file, index) => {
+                    const statusEl = document.getElementById(`status-${index}`);
+                    const progressBar = document.getElementById(`progress-${index}`);
+                    if (statusEl) {
+                        statusEl.textContent = 'Error';
+                        statusEl.className = 'file-status status-error';
+                        if (progressBar) progressBar.style.display = 'none';
+                    }
+                });
+
+                const errorMessage = error.message || 'Upload failed';
+
+                const resultItem = document.createElement('div');
+                resultItem.className = 'result-item error';
+                resultItem.innerHTML = `
+                    <div class="result-title">✗ Upload Failed</div>
+                    <div>Error: ${errorMessage}</div>
+                `;
+                results.appendChild(resultItem);
+                results.classList.add('show');
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        // Load upload info on page load
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/upload/info`);
+                const data = await response.json();
+                if (data.success) {
+                    console.log('Upload configuration:', data.data);
+                }
+            } catch (error) {
+                console.error('Failed to load upload info:', error);
+            }
+        });
+    </script>
+</body>
+</html>
